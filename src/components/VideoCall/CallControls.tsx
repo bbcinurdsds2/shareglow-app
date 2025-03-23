@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Mic, MicOff, Video, VideoOff, PhoneOff, 
-  ScreenShare, StopScreenShare, MessageSquare, Settings, Maximize
+  ScreenShare, MonitorOff, MessageSquare, Settings, Maximize
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -88,7 +87,7 @@ const CallControls: React.FC<CallControlsProps> = ({
               onClick={toggleScreenShare}
             >
               {isScreenSharing ? 
-                <StopScreenShare className="h-5 w-5" /> : 
+                <MonitorOff className="h-5 w-5" /> : 
                 <ScreenShare className="h-5 w-5" />
               }
             </Button>
