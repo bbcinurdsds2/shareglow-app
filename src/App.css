@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -39,4 +40,73 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Video Call Styles */
+.video-container {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Emoji effects */
+.emoji-effect {
+  position: absolute;
+  z-index: 1000;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Glassmorphism effect */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Control button hover effect */
+.control-button {
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Animation classes */
+.animate-blur-in {
+  animation: blurIn 0.5s ease-out forwards;
+}
+
+@keyframes blurIn {
+  0% {
+    opacity: 0;
+    filter: blur(20px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

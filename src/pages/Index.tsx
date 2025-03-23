@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useMediaDevices } from '@/hooks/useMediaDevices';
 import VideoStream from '@/components/VideoCall/VideoStream';
@@ -68,8 +67,87 @@ const Index = () => {
     applyVideoEffect,
     setAudioInput,
     setVideoInput,
-    setAudioOutput
+    setAudioOutput,
+    flipCamera
   } = useMediaDevices();
+  
+  // Updated applyEffect function to handle emoji effects
+  const applyEffect = () => {
+    if (currentEffect === 'none') {
+      // Clear any existing effects
+      if (appContainerRef.current) {
+        const existingEffects = appContainerRef.current.querySelectorAll('.emoji-effect');
+        existingEffects.forEach(el => el.remove());
+      }
+      toast.success('Effects cleared');
+      return;
+    }
+    
+    // Create emoji effects
+    const container = appContainerRef.current;
+    if (!container) return;
+    
+    // Clear any existing effects first
+    const existingEffects = container.querySelectorAll('.emoji-effect');
+    existingEffects.forEach(el => el.remove());
+    
+    // Create new effects based on the selected type
+    const createEmojis = () => {
+      // Determine the emoji to use
+      let emoji = '❤️';
+      switch (currentEffect) {
+        case 'hearts': emoji = '❤️'; break;
+        case 'thumbsup': emoji = '👍'; break;
+        case 'wave': emoji = '👋'; break;
+        case 'confetti': emoji = '🎉'; break;
+        case 'sparkles': emoji = '✨'; break;
+        case 'laugh': emoji = '😂'; break;
+        case 'stars': emoji = '⭐'; break;
+        default: emoji = '❤️';
+      }
+      
+      // Create 20 emoji elements and animate them
+      for (let i = 0; i < 20; i++) {
+        const emojiEl = document.createElement('div');
+        emojiEl.className = 'emoji-effect';
+        emojiEl.textContent = emoji;
+        emojiEl.style.position = 'absolute';
+        emojiEl.style.fontSize = `${Math.random() * 20 + 20}px`;
+        emojiEl.style.zIndex = '1000';
+        emojiEl.style.userSelect = 'none';
+        emojiEl.style.pointerEvents = 'none';
+        
+        // Random starting position at the bottom
+        emojiEl.style.left = `${Math.random() * 100}%`;
+        emojiEl.style.top = `${Math.random() * 20 + 80}%`; // Start from bottom area
+        
+        container.appendChild(emojiEl);
+        
+        // Animate with GSAP
+        gsap.to(emojiEl, {
+          y: `-${Math.random() * 300 + 200}px`,
+          x: Math.random() * 100 - 50,
+          opacity: 0,
+          duration: Math.random() * 3 + 2,
+          ease: 'power1.out',
+          onComplete: () => {
+            emojiEl.remove();
+          }
+        });
+      }
+    };
+    
+    // Create initial batch
+    createEmojis();
+    
+    // Create a new batch every second for 5 seconds
+    const intervalId = setInterval(createEmojis, 1000);
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 5000);
+    
+    toast.success(`Applied ${currentEffect} effect`);
+  };
 
   // Initialize app animations
   useEffect(() => {
@@ -137,11 +215,6 @@ const Index = () => {
     }
   };
   
-  // Handle applying effects
-  const applyEffect = () => {
-    applyVideoEffect(currentEffect);
-    toast.success(`Applied ${currentEffect} effect`);
-  };
   
   // Add a chat message
   const addMessage = (sender: string, text: string) => {
@@ -300,7 +373,7 @@ const Index = () => {
               )}
             </div>
             
-            {/* Self view */}
+            {/* Self view with flip camera button */}
             <div className="relative h-full">
               <VideoStream 
                 stream={localStream}
@@ -308,6 +381,7 @@ const Index = () => {
                 isSelf={true}
                 className="h-full"
                 name="Me"
+                onFlipCamera={flipCamera}
               />
               
               {/* Screen sharing indicator */}
@@ -369,6 +443,15 @@ const Index = () => {
           />
         </div>
       )}
+      
+      {/* Add global styles for emoji effects */}
+      <style jsx global>{`
+        .emoji-effect {
+          position: absolute;
+          z-index: 1000;
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 };

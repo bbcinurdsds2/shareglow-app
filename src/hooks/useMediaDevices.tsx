@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 interface UseMediaDevicesOutput {
@@ -23,6 +22,7 @@ interface UseMediaDevicesOutput {
   setAudioInput: (deviceId: string) => Promise<void>;
   setVideoInput: (deviceId: string) => Promise<void>;
   setAudioOutput: (deviceId: string) => void;
+  flipCamera: () => Promise<void>;
 }
 
 export function useMediaDevices(): UseMediaDevicesOutput {
@@ -39,6 +39,28 @@ export function useMediaDevices(): UseMediaDevicesOutput {
   const [currentAudioInputId, setCurrentAudioInputId] = useState('');
   const [currentVideoInputId, setCurrentVideoInputId] = useState('');
   const [currentAudioOutputId, setCurrentAudioOutputId] = useState('');
+
+  // Flip between front and back cameras (particularly useful on mobile)
+  const flipCamera = useCallback(async () => {
+    if (!localStream || videoInputDevices.length < 2) return;
+    
+    try {
+      // Find the current camera index
+      const currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentVideoInputId);
+      if (currentIndex === -1) return;
+      
+      // Select the next camera in the list
+      const nextIndex = (currentIndex + 1) % videoInputDevices.length;
+      const nextCameraId = videoInputDevices[nextIndex].deviceId;
+      
+      // Switch to the new camera
+      await setVideoInput(nextCameraId);
+      
+      console.log(`Camera flipped to: ${videoInputDevices[nextIndex].label}`);
+    } catch (error) {
+      console.error('Error flipping camera:', error);
+    }
+  }, [localStream, videoInputDevices, currentVideoInputId, setVideoInput]);
 
   // Get available media devices
   const getMediaDevices = useCallback(async () => {
@@ -346,6 +368,7 @@ export function useMediaDevices(): UseMediaDevicesOutput {
     applyVideoEffect,
     setAudioInput,
     setVideoInput,
-    setAudioOutput
+    setAudioOutput,
+    flipCamera
   };
 }
