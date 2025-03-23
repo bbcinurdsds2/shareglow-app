@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 
 interface UseMediaDevicesOutput {
@@ -40,28 +41,6 @@ export function useMediaDevices(): UseMediaDevicesOutput {
   const [currentVideoInputId, setCurrentVideoInputId] = useState('');
   const [currentAudioOutputId, setCurrentAudioOutputId] = useState('');
 
-  // Flip between front and back cameras (particularly useful on mobile)
-  const flipCamera = useCallback(async () => {
-    if (!localStream || videoInputDevices.length < 2) return;
-    
-    try {
-      // Find the current camera index
-      const currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentVideoInputId);
-      if (currentIndex === -1) return;
-      
-      // Select the next camera in the list
-      const nextIndex = (currentIndex + 1) % videoInputDevices.length;
-      const nextCameraId = videoInputDevices[nextIndex].deviceId;
-      
-      // Switch to the new camera
-      await setVideoInput(nextCameraId);
-      
-      console.log(`Camera flipped to: ${videoInputDevices[nextIndex].label}`);
-    } catch (error) {
-      console.error('Error flipping camera:', error);
-    }
-  }, [localStream, videoInputDevices, currentVideoInputId, setVideoInput]);
-
   // Get available media devices
   const getMediaDevices = useCallback(async () => {
     try {
@@ -91,6 +70,61 @@ export function useMediaDevices(): UseMediaDevicesOutput {
       console.error('Error enumerating media devices:', error);
     }
   }, [currentAudioInputId, currentVideoInputId, currentAudioOutputId]);
+
+  // Set video input device - moved up to fix the reference in flipCamera
+  const setVideoInput = useCallback(async (deviceId: string) => {
+    if (deviceId === currentVideoInputId) return;
+    
+    setCurrentVideoInputId(deviceId);
+    
+    // Restart stream with new device if we already have a stream
+    if (localStream && isVideoActive) {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { 
+            deviceId: { exact: deviceId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        
+        // Stop old video tracks
+        localStream.getVideoTracks().forEach(track => track.stop());
+        
+        // Remove old video tracks and add new ones
+        localStream.getVideoTracks().forEach(track => localStream.removeTrack(track));
+        newStream.getVideoTracks().forEach(track => localStream.addTrack(track));
+        
+        // Update state to reflect new camera state
+        setIsVideoActive(true);
+      } catch (error) {
+        console.error('Error switching video input:', error);
+      }
+    }
+  }, [localStream, isVideoActive, currentVideoInputId]);
+
+  // Flip between front and back cameras (particularly useful on mobile)
+  const flipCamera = useCallback(async () => {
+    if (!localStream || videoInputDevices.length < 2) return;
+    
+    try {
+      // Find the current camera index
+      const currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentVideoInputId);
+      if (currentIndex === -1) return;
+      
+      // Select the next camera in the list
+      const nextIndex = (currentIndex + 1) % videoInputDevices.length;
+      const nextCameraId = videoInputDevices[nextIndex].deviceId;
+      
+      // Switch to the new camera
+      await setVideoInput(nextCameraId);
+      
+      console.log(`Camera flipped to: ${videoInputDevices[nextIndex].label}`);
+    } catch (error) {
+      console.error('Error flipping camera:', error);
+    }
+  }, [localStream, videoInputDevices, currentVideoInputId, setVideoInput]);
 
   // Start local stream with selected devices
   const startLocalStream = useCallback(async () => {
@@ -276,39 +310,6 @@ export function useMediaDevices(): UseMediaDevicesOutput {
       }
     }
   }, [localStream, currentAudioInputId, currentVideoInputId]);
-
-  // Set video input device
-  const setVideoInput = useCallback(async (deviceId: string) => {
-    if (deviceId === currentVideoInputId) return;
-    
-    setCurrentVideoInputId(deviceId);
-    
-    // Restart stream with new device if we already have a stream
-    if (localStream && isVideoActive) {
-      try {
-        const newStream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { 
-            deviceId: { exact: deviceId },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        });
-        
-        // Stop old video tracks
-        localStream.getVideoTracks().forEach(track => track.stop());
-        
-        // Remove old video tracks and add new ones
-        localStream.getVideoTracks().forEach(track => localStream.removeTrack(track));
-        newStream.getVideoTracks().forEach(track => localStream.addTrack(track));
-        
-        // Update state to reflect new camera state
-        setIsVideoActive(true);
-      } catch (error) {
-        console.error('Error switching video input:', error);
-      }
-    }
-  }, [localStream, isVideoActive, currentVideoInputId]);
 
   // Set audio output device (for browsers that support it)
   const setAudioOutput = useCallback((deviceId: string) => {
