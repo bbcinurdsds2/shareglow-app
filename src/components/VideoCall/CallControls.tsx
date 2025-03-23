@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -36,7 +37,7 @@ const CallControls: React.FC<CallControlsProps> = ({
 }) => {
   return (
     <TooltipProvider>
-      <div className="w-full flex justify-center space-x-4">
+      <div className="w-full flex flex-wrap justify-center space-x-2 md:space-x-4">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
