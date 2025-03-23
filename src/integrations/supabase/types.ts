@@ -9,13 +9,98 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      call_rooms: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean | null
+          room_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          room_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          room_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      participants: {
+        Row: {
+          id: string
+          joined_at: string
+          left_at: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "call_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_room_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
